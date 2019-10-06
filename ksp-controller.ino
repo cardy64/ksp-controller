@@ -23,15 +23,6 @@ void blink_led(int count) {
   delay(1000);  
 }
 
-void blink_forever() {
-  while (true) {
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(100);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
-  }
-}
-
 void setup() {
   krpc_error_t error;
   
