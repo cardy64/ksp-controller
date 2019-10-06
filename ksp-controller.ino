@@ -54,7 +54,7 @@ void setup() {
 
   // Set up communication with the server
   do {
-    error = krpc_connect(conn, "Arduino Example");
+    error = krpc_connect(conn, "Milo's KSP Controller");
     if (error != KRPC_OK) {
       blink_led(-(int) error);
       delay(100);
@@ -67,11 +67,12 @@ void setup() {
       delay(100);
     }
   } while (error != KRPC_OK);
-  
+
   do {
     error = krpc_SpaceCenter_Vessel_Control(conn, &control, vessel);
     if (error != KRPC_OK) {
       delay(100);
+      blink_led(- (int)error);
     }
   } while (error != KRPC_OK);  
 }
@@ -81,8 +82,8 @@ void loop() {
   bool sas;
 
   // Set SAS from switch.
-  sas = digitalRead(SAS_CONTROL_PIN) == LOW;
-  krpc_SpaceCenter_Control_set_SAS(conn, control, sas);
+ /// sas = digitalRead(SAS_CONTROL_PIN) == LOW;
+ /// krpc_SpaceCenter_Control_set_SAS(conn, control, sas);
 
   // Get SAS for LED.
   do {
@@ -98,6 +99,7 @@ void loop() {
     digitalWrite(LED_BUILTIN, LOW);
   }
 
+/*
   // Stage.
   bool stage = digitalRead(STAGE_PIN) == LOW;
   if (stage && !previousStage) {
@@ -108,6 +110,6 @@ void loop() {
   // Read throttle.
   int throttle = analogRead(0);
   krpc_SpaceCenter_Control_set_Throttle(conn, control, throttle/1023.0);
-  
+  */
   delay(100);
 }
