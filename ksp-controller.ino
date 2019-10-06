@@ -4,6 +4,8 @@
 
 #define SAS_CONTROL_PIN 7
 #define STAGE_PIN 8
+#define STAGE_SAFETY_PIN 9
+#define STAGE_LED_PIN 10
 
 HardwareSerial *conn;
 krpc_SpaceCenter_Control_t instance;
@@ -31,6 +33,9 @@ void setup() {
 
   pinMode(SAS_CONTROL_PIN, INPUT_PULLUP);
   pinMode(STAGE_PIN, INPUT_PULLUP);
+  pinMode(STAGE_SAFETY_PIN, INPUT_PULLUP);
+  pinMode(STAGE_LED_PIN, OUTPUT);
+  digitalWrite(STAGE_LED_PIN, LOW);
 
   conn = &Serial;
   delay(1000);
@@ -90,14 +95,16 @@ void loop() {
     digitalWrite(LED_BUILTIN, LOW);
   }
 
-/*
   // Stage.
+  bool stageSafetyOff = digitalRead(STAGE_SAFETY_PIN) == LOW;
+  digitalWrite(STAGE_LED_PIN, stageSafetyOff);
   bool stage = digitalRead(STAGE_PIN) == LOW;
-  if (stage && !previousStage) {
+  if (stage && !previousStage && stageSafetyOff) {
       krpc_SpaceCenter_Control_ActivateNextStage(conn, NULL, control);
   }
   previousStage = stage;
 
+  /*
   // Read throttle.
   int throttle = analogRead(0);
   krpc_SpaceCenter_Control_set_Throttle(conn, control, throttle/1023.0);
