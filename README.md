@@ -1,6 +1,9 @@
 
 Arduino code for controlling a Kerbal Space Program (KSP) game.
 
+Install the kRPC library (v0.4.8 or later) using the Arduino's library
+management system.
+
 # License
 
 Copyright 2018 Lawrence Kesteloot and Milo Kesteloot

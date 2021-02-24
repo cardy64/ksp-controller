@@ -6,6 +6,10 @@
 #define STAGE_PIN 8
 #define STAGE_SAFETY_PIN 9
 #define STAGE_LED_PIN 10
+#define YAW_PIN A1
+#define PITCH_PIN A2
+#define ROLL_PIN A3
+#define THROTTLE_PIN A4
 
 HardwareSerial *conn;
 krpc_SpaceCenter_Control_t instance;
@@ -82,6 +86,7 @@ void loop() {
  /// krpc_SpaceCenter_Control_set_SAS(conn, control, sas);
 
   // Get SAS for LED.
+  if (false) {
   do {
     error = krpc_SpaceCenter_Control_SAS(conn, &sas, control);
     if (error != KRPC_OK) {
@@ -94,10 +99,11 @@ void loop() {
   } else {
     digitalWrite(LED_BUILTIN, LOW);
   }
+  }
 
   // Stage.
-  bool stageSafetyOff = digitalRead(STAGE_SAFETY_PIN) == LOW;
-  digitalWrite(STAGE_LED_PIN, stageSafetyOff);
+  bool stageSafetyOff = true; // digitalRead(STAGE_SAFETY_PIN) == LOW;
+  //digitalWrite(STAGE_LED_PIN, stageSafetyOff);
   bool stage = digitalRead(STAGE_PIN) == LOW;
   if (stage && !previousStage && stageSafetyOff) {
       krpc_SpaceCenter_Control_ActivateNextStage(conn, NULL, control);
@@ -109,5 +115,24 @@ void loop() {
   int throttle = analogRead(0);
   krpc_SpaceCenter_Control_set_Throttle(conn, control, throttle/1023.0);
   */
+
+  int yaw = analogRead(YAW_PIN);
+  krpc_SpaceCenter_Control_set_Yaw(conn, control, -(yaw/512.0f - 1.0f));
+
+  int pitch = analogRead(PITCH_PIN);
+  krpc_SpaceCenter_Control_set_Pitch(conn, control, -(pitch/512.0f - 1.0f));
+
+  int roll = analogRead(ROLL_PIN);
+  krpc_SpaceCenter_Control_set_Roll(conn, control, -(roll/512.0f - 1.0f));
+
+  int throttle = analogRead(THROTTLE_PIN);
+  if (throttle < 10) {
+    throttle = 0;
+  }
+  if (throttle > 1015) {
+    throttle = 1023;    
+  }
+  krpc_SpaceCenter_Control_set_Throttle(conn, control, throttle/1023.0f);
+
   delay(100);
 }
