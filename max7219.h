@@ -5,18 +5,18 @@ static const int LOAD_PIN = 3;
 static const int CLOCK_PIN = 4;
 
 // Number of displays:
-static const int DISPLAY_COUNT = 1;
+static const int DISPLAY_COUNT = 4;
 
 // MAX7219 registers:
 static const byte MAX7219_REG_NOOP         = 0x00;
-static const byte MAX7219_REG_DIGIT0       = 0x01;
+static const byte MAX7219_REG_DIGIT0       = 0x01; // Right-most digit.
 static const byte MAX7219_REG_DIGIT1       = 0x02;
 static const byte MAX7219_REG_DIGIT2       = 0x03;
 static const byte MAX7219_REG_DIGIT3       = 0x04;
 static const byte MAX7219_REG_DIGIT4       = 0x05;
 static const byte MAX7219_REG_DIGIT5       = 0x06;
 static const byte MAX7219_REG_DIGIT6       = 0x07;
-static const byte MAX7219_REG_DIGIT7       = 0x08;
+static const byte MAX7219_REG_DIGIT7       = 0x08; // Left-most digit.
 static const byte MAX7219_REG_DECODE_MODE  = 0x09;
 static const byte MAX7219_REG_INTENSITY    = 0x0A;
 static const byte MAX7219_REG_SCAN_LIMIT   = 0x0B;
@@ -60,8 +60,7 @@ static void setRegister(byte reg, byte value, int display_index = -1) {
     digitalWrite(LOAD_PIN, HIGH);
 }
 
-
-void setup () {
+void setupLeds() {
     // Initialize Arduino.
     pinMode(DATA_PIN, OUTPUT);
     pinMode(CLOCK_PIN, OUTPUT);
@@ -91,7 +90,7 @@ void setup () {
 
 int dot = 0;
 
-void loop() {
+void loopLeds() {
     for (int i = 0; i < 8; i++) {
         setRegister(MAX7219_REG_DIGIT0 + i, (8 - i) | (dot == 7 - i ? BCD_DOT : 0));
     }
