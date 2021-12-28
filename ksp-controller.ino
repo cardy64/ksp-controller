@@ -31,6 +31,10 @@ HardwareSerial *conn;
 krpc_SpaceCenter_Control_t instance;
 krpc_SpaceCenter_Vessel_t vessel;
 krpc_SpaceCenter_Control_t control;
+krpc_SpaceCenter_Flight_t flight;
+krpc_SpaceCenter_Flight_t planetFlight;
+krpc_SpaceCenter_ReferenceFrame_t referenceFrame;
+krpc_SpaceCenter_ReferenceFrame_t planetReferenceFrame;
 
 bool previousStage = false;
 int lastThrottleKsp = -1000;
@@ -85,7 +89,7 @@ void setup() {
   pinMode(ABORT_BUTTON_PIN, INPUT_PULLUP);
   pinMode(ABORT_LIGHT_PIN, OUTPUT);
   
-  //setupLeds();
+  setupLeds();
 
   conn = &Serial;
   delay(1000);
@@ -121,6 +125,23 @@ void setup() {
       blink_led(- (int)error);
     }
   } while (error != KRPC_OK);  
+
+  do {
+    error = krpc_SpaceCenter_Vessel_Flight(conn, &flight, vessel, referenceFrame);
+    if (error != KRPC_OK) {
+      delay(100);
+      blink_led(- (int)error);
+    }
+  } while (error != KRPC_OK);
+
+  krpc_SpaceCenter_Orbit_t orbit;
+  krpc_SpaceCenter_Vessel_Orbit(conn, &orbit, vessel);
+
+  krpc_SpaceCenter_CelestialBody_t body;
+  krpc_SpaceCenter_Orbit_Body(conn, &body, orbit);
+
+  krpc_SpaceCenter_CelestialBody_ReferenceFrame(conn, &planetReferenceFrame, body);
+  krpc_SpaceCenter_Vessel_Flight(conn, &planetFlight, vessel, planetReferenceFrame);
 }
 
 
@@ -219,7 +240,15 @@ void loop() {
   }
   analogWrite(THRUST_PWM_PIN, 255);
 
-  //loopLeds();
+  // -----------------------------------------------------------------------------------------------
+  // 7-segment displays.
+
+  double altitude, speed;
+  float density;
+  krpc_SpaceCenter_Flight_SurfaceAltitude(conn, &altitude, flight);
+  krpc_SpaceCenter_Flight_Speed(conn, &speed, planetFlight);
+  krpc_SpaceCenter_Flight_AtmosphereDensity(conn, &density, flight);
+  loopLeds(altitude, speed, density);
 
   // -----------------------------------------------------------------------------------------------
   // Buttons.

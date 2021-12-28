@@ -1,8 +1,8 @@
 
 // Pins for control:
-static const int DATA_PIN = 2;
-static const int LOAD_PIN = 3;
-static const int CLOCK_PIN = 4;
+static const int DATA_PIN = 24;
+static const int LOAD_PIN = 25;
+static const int CLOCK_PIN = 26;
 
 // Number of displays:
 static const int DISPLAY_COUNT = 4;
@@ -85,16 +85,55 @@ void setupLeds() {
     }
 
     // 0x00 to 0x0F:
-    setRegister(MAX7219_REG_INTENSITY, 0x0F);
+    setRegister(MAX7219_REG_INTENSITY, 0x01);
 }
 
 int dot = 0;
 
-void loopLeds() {
-    for (int i = 0; i < 8; i++) {
-        setRegister(MAX7219_REG_DIGIT0 + i, (8 - i) | (dot == 7 - i ? BCD_DOT : 0));
-    }
-    dot = dot == 7 ? 0 : dot + 1;
+void displayNumber(int d, double number, int decimalDigits) {
+  bool negative = false;
 
-    delay(100);
+  if (number < 0) {
+    number = -number;
+    negative = true;
+  }
+
+  for (int i = 0; i < decimalDigits; i++) {
+    number *= 10;
+  }
+
+  for (int i = 0; i < 8; i++) {
+    int digit;
+
+    if (number < 1 && decimalDigits < 0) {
+      if (negative) {
+        digit = BCD_HYPHEN;
+        negative = false;
+      } else {
+        digit = BCD_BLANK;
+      }
+    } else {
+      digit = ((long) number) % 10;
+    }
+    if (decimalDigits == 0) {
+      digit |= BCD_DOT;
+    }
+    setRegister(MAX7219_REG_DIGIT0 + i, digit, d);
+    number /= 10;
+    decimalDigits -= 1;
+  }
+}
+
+void loopLeds(double altitude, double speed, double density) {
+  displayNumber(3, altitude, 0);
+  displayNumber(2, speed, 0);
+  displayNumber(1, density, 4);
+  
+  for (int d = 0; d < 1; d++) {
+    for (int i = 0; i < 8; i++) {
+        setRegister(MAX7219_REG_DIGIT0 + i, (8 - i) | (dot == 7 - i ? BCD_DOT : 0), d);
+    }    
+  }
+
+  dot = dot == 7 ? 0 : dot + 1;
 }
